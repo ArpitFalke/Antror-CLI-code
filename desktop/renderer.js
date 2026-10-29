@@ -44,7 +44,7 @@ async function init() {
     const providerName = settings.provider === 'gemini' ? 'Google Gemini' : settings.provider === 'anthropic' ? 'Claude' : settings.provider;
     activeModelBadge.textContent = `${providerName}: ${settings.model || 'default'}`;
     settingsProvider.value = settings.provider || 'gemini';
-    settingsModel.value = settings.model || 'gemini-1.5-pro';
+    settingsModel.value = settings.model || 'gemini-3.5-flash';
     settingsApiKey.value = settings.apiKey || '';
   }
 

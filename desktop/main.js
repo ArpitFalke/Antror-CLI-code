@@ -5,6 +5,18 @@ import { fileURLToPath } from 'node:url';
 import { AntrorClient } from '../dist/sdk.js';
 import { loadSettings, saveUserSettings } from '../dist/config/settings.js';
 
+// Catch any fatal errors and display an informative dialog instead of silent exit
+process.on('uncaughtException', (err) => {
+  console.error('Fatal Antror Studio Error:', err);
+  try {
+    dialog.showErrorBox('Antror Code Studio Error', `${err.message || String(err)}\n\n${err.stack || ''}`);
+  } catch {}
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,20 +32,19 @@ function createWindow() {
     minHeight: 650,
     title: 'Antror Code Studio',
     backgroundColor: '#0F1115',
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#0F1115',
-      symbolColor: '#FF6B35',
-      height: 38,
-    },
+    autoHideMenuBar: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
       contextIsolation: true,
     },
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+    dialog.showErrorBox('Load Error', `Failed to load interface: ${errorDescription} (${errorCode})`);
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
