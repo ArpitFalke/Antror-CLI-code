@@ -22,6 +22,9 @@
   "build": {
     "appId": "com.antror.code",
     "productName": "Antror Code",
+    "extraMetadata": {
+      "main": "desktop/main.js"
+    },
     "directories": {
       "output": "desktop-dist"
     },

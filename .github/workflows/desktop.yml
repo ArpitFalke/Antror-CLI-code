@@ -1,9 +1,5 @@
 name: desktop-build
 
-# Builds the ANTROR Code desktop app for Windows, macOS and Linux.
-# Run it by pushing a tag (v1.0.0) or from the Actions tab ("Run workflow").
-# Installers appear on:  https://github.com/<your-user>/<your-repo>/releases
-
 on:
   push:
     branches: ["main", "master"]
@@ -14,67 +10,43 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  build-windows-exe:
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
+      - name: Compile TypeScript
         run: npm run build
 
-      - name: Build installers
-        run: npx electron-builder --publish never
+      - name: Package Windows .exe with Electron Builder
+        run: npx electron-builder --win --publish never
 
-      - name: Upload artifacts
+      - name: Upload .exe as Artifact (Guaranteed Download)
         uses: actions/upload-artifact@v4
         with:
-          name: ANTROR-Code-${{ matrix.os }}
-          path: |
-            desktop-dist/*.exe
-            desktop-dist/*.dmg
-            desktop-dist/*.AppImage
-            desktop-dist/*.deb
+          name: Antror-Code-Desktop-Windows-Setup
+          path: desktop-dist/*.exe
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-          path: artifacts
-      - name: Generate SHA256 checksums
-        run: |
-          cd artifacts
-          sha256sum * > SHA256SUMS.txt || true
-          cat SHA256SUMS.txt
-      - name: Attach installers to the GitHub Release
+      - name: Attach .exe to GitHub Releases
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
-          name: "Antror Code v1.0.0 — Desktop & CLI Release"
-          body: |
-            ## Antror Code v1.0.0
-
-            ### 🚀 Desktop Application Downloads
-            - **Windows**: Download `Antror Code Setup 1.0.0.exe` below and run the installer.
-            - **macOS / Linux**: Download `.dmg` or `.AppImage` below.
-
-            ### 💻 CLI Quickstart
-            ```bash
-            npm install -g antror-code
-            antror
-            ```
-          files: artifacts/*
+          name: "Antror Code Desktop v1.0.0"
+          draft: false
+          prerelease: false
+          files: desktop-dist/*.exe
           fail_on_unmatched_files: false
           make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
