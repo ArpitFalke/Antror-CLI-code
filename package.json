@@ -1,0 +1,78 @@
+{
+  "name": "antror-code",
+  "version": "1.0.0",
+  "description": "Terminal-based agentic coding assistant replicating Claude Code UI/UX and behavior",
+  "type": "module",
+  "bin": {
+    "antror": "./bin/antror.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node ./bin/antror.js",
+    "desktop": "electron ./desktop/main.js",
+    "desktop:build": "electron-builder --win",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "build": {
+    "appId": "com.antror.code",
+    "productName": "Antror Code",
+    "directories": {
+      "output": "desktop-dist"
+    },
+    "files": [
+      "desktop/**/*",
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "keywords": [
+    "ai",
+    "coding-assistant",
+    "claude-code",
+    "terminal-ui",
+    "agent",
+    "ink",
+    "cli"
+  ],
+  "author": "Antror Team",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "diff": "^7.0.0",
+    "dotenv": "^16.4.5",
+    "glob": "^10.4.5",
+    "ink": "^5.0.1",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.2.1",
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.3",
+    "electron": "^45.1.0",
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

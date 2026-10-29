@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antror Code Studio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Native-style Titlebar -->
+  <header class="titlebar">
+    <div class="drag-region">
+      <div class="brand">
+        <span class="brand-logo">⚡</span>
+        <span class="brand-title">ANTROR CODE</span>
+        <span class="badge">STUDIO</span>
+      </div>
+      <div class="project-pill" id="openProjectBtn">
+        <span class="folder-icon">📁</span>
+        <span id="currentProjectLabel">Loading workspace...</span>
+      </div>
+    </div>
+    <div class="window-controls">
+      <button class="icon-btn" id="settingsBtn" title="Settings">⚙️ Settings</button>
+    </div>
+  </header>
+
+  <!-- Main Application Container -->
+  <div class="app-layout">
+    <!-- Left Sidebar: Explorer & Tasks -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>PROJECT EXPLORER</span>
+        <button class="mini-btn" id="refreshFilesBtn">↻</button>
+      </div>
+      <div class="file-tree" id="fileTreeContainer">
+        <div class="loading-hint">Scanning files...</div>
+      </div>
+
+      <!-- Live Tasks Widget -->
+      <div class="sidebar-section">
+        <div class="sidebar-header">
+          <span>ACTIVE TASKS</span>
+        </div>
+        <div class="tasks-list" id="tasksList">
+          <div class="task-empty">No active tasks.</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center: Main Chat & Agent Interaction -->
+    <main class="chat-viewport">
+      <div class="chat-stream" id="chatStream">
+        <!-- Welcome Hero Card -->
+        <div class="hero-card">
+          <div class="hero-icon">⚡</div>
+          <h2>Welcome to Antror Code Studio</h2>
+          <p>Autonomous AI coding assistant replicating Claude Code & Codex terminal workflows.</p>
+          <div class="quick-chips">
+            <button class="chip" onclick="setPrompt('Analyze the project architecture and summarize key components')">🔍 Architecture Summary</button>
+            <button class="chip" onclick="setPrompt('Inspect unit tests and run vitest')">🧪 Test Suite</button>
+            <button class="chip" onclick="setPrompt('Create an ANTROR.md project memory guideline')">📝 Project Memory</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Prompter Input Box -->
+      <div class="prompter-container">
+        <div class="prompter-toolbar">
+          <div class="mode-selector">
+            <span class="toolbar-label">Mode:</span>
+            <select id="permissionModeSelect">
+              <option value="default">Default (Ask on edits)</option>
+              <option value="acceptEdits" selected>Accept Edits (Auto-modify)</option>
+              <option value="plan">Plan Mode (Read-only)</option>
+              <option value="bypassPermissions">Bypass (Autonomous)</option>
+            </select>
+          </div>
+          <div class="provider-pill">
+            <span id="activeModelBadge">Google Gemini 1.5 Pro</span>
+          </div>
+        </div>
+
+        <div class="prompter-box">
+          <span class="prompt-symbol">></span>
+          <textarea
+            id="promptInput"
+            placeholder="Describe what you want to build or change (Shift+Enter for newline)..."
+            rows="1"
+          ></textarea>
+          <button id="sendBtn" class="send-button" title="Send (Enter)">
+            <span>▲</span>
+          </button>
+        </div>
+        <div class="prompter-footer">
+          <span class="hint">Shift+Enter for newline · Esc to interrupt · @ for files</span>
+          <span id="tokenCounter" class="token-count">0 tokens ($0.000)</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Sidebar: Code & Diff Inspector -->
+    <aside class="diff-panel" id="diffPanel">
+      <div class="diff-header">
+        <div class="diff-tabs">
+          <button class="tab-btn active" id="tabDiff">Changes & Diffs</button>
+          <button class="tab-btn" id="tabFile">File Viewer</button>
+        </div>
+        <button class="mini-btn" id="closeDiffBtn">✕</button>
+      </div>
+      <div class="diff-content" id="diffContent">
+        <div class="diff-empty">
+          <span>No active file modifications. Changes will appear here as the agent works.</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Antror Code Settings</h3>
+        <button class="modal-close" id="closeSettingsModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>AI Provider</label>
+          <select id="settingsProvider">
+            <option value="gemini">Google Gemini</option>
+            <option value="anthropic">Anthropic Claude</option>
+            <option value="openai">OpenAI / OpenRouter / DeepSeek</option>
+            <option value="ollama">Local Ollama</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Model Name</label>
+          <input type="text" id="settingsModel" placeholder="e.g. gemini-1.5-pro, claude-3-5-sonnet-20241022, gpt-4o" />
+        </div>
+        <div class="form-group">
+          <label>API Key</label>
+          <input type="password" id="settingsApiKey" placeholder="sk-... or Google Gemini API Key" />
+          <small>Keys are stored securely in your user directory (~/.antror/settings.json).</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveSettingsBtn">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
