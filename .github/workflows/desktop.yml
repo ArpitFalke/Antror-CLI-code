@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Build project
+        run: npm run build
+
       - name: Build installers
         run: npx electron-builder --publish never
 
@@ -45,7 +48,6 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -59,6 +61,20 @@ jobs:
       - name: Attach installers to the GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          name: "Antror Code v1.0.0 — Desktop & CLI Release"
+          body: |
+            ## Antror Code v1.0.0
+
+            ### 🚀 Desktop Application Downloads
+            - **Windows**: Download `Antror Code Setup 1.0.0.exe` below and run the installer.
+            - **macOS / Linux**: Download `.dmg` or `.AppImage` below.
+
+            ### 💻 CLI Quickstart
+            ```bash
+            npm install -g antror-code
+            antror
+            ```
           files: artifacts/*
           fail_on_unmatched_files: false
           make_latest: true
