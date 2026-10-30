@@ -185,6 +185,12 @@ export class OpenAIProvider implements LLMProvider {
           const delta = choice.delta;
           if (!delta) continue;
 
+          if (delta.reasoning_content) {
+            yield { type: 'thought', text: delta.reasoning_content };
+          } else if (delta.thought) {
+            yield { type: 'thought', text: delta.thought };
+          }
+
           if (delta.content) {
             yield { type: 'token', text: delta.content };
           }

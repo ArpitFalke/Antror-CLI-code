@@ -56,6 +56,7 @@ export interface TokenUsage {
 
 export type LLMStreamEvent =
   | { type: 'token'; text: string }
+  | { type: 'thought'; text: string }
   | { type: 'tool_call_start'; id: string; name: string }
   | { type: 'tool_call_delta'; id: string; delta: string }
   | { type: 'tool_call_end'; id: string; name: string; arguments: Record<string, any> }

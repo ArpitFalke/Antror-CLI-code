@@ -77,6 +77,33 @@ export const MODEL_PRICING: Record<string, ModelPricing> = {
     inputPerMillion: 1.25,
     outputPerMillion: 5.00,
   },
+  // DeepSeek Models
+  'deepseek-chat': {
+    inputPerMillion: 0.14,
+    outputPerMillion: 0.28,
+  },
+  'deepseek-reasoner': {
+    inputPerMillion: 0.55,
+    outputPerMillion: 2.19,
+  },
+  // Groq Models
+  'llama-3.3-70b-versatile': {
+    inputPerMillion: 0.59,
+    outputPerMillion: 0.79,
+  },
+  'llama-3.1-8b-instant': {
+    inputPerMillion: 0.05,
+    outputPerMillion: 0.08,
+  },
+  // Mistral Models
+  'mistral-large-latest': {
+    inputPerMillion: 2.00,
+    outputPerMillion: 6.00,
+  },
+  'codestral-latest': {
+    inputPerMillion: 0.20,
+    outputPerMillion: 0.60,
+  },
 };
 
 export function calculateCost(model: string, usage: TokenUsage): number {

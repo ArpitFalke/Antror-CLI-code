@@ -8,6 +8,7 @@ import { saveUserSettings, saveProjectSettings } from '../config/settings.js';
 import { setTheme, getCurrentThemeName, ThemeName } from '../config/theme.js';
 import { PermissionEngine } from '../permissions/engine.js';
 import { getGitContext } from '../memory/git.js';
+import { createLLMProvider, testConnection } from '../llm/factory.js';
 
 export interface CommandContext {
   agentLoop: AgentLoop;
@@ -95,17 +96,124 @@ export const BUILTIN_COMMANDS: Record<string, CommandDef> = {
 
   '/model': {
     name: '/model',
-    description: 'View or switch the active LLM model',
+    description: 'View or switch the active LLM model (paste or type any model name)',
     usage: '/model [model_name]',
     handler: async (args, ctx) => {
       const trimmed = args.trim();
       if (!trimmed) {
-        ctx.onOutput(`Active model: **${ctx.settings.model}** (provider: ${ctx.settings.provider})`);
+        ctx.onOutput(`Active model: **${ctx.settings.model}** (provider: ${ctx.settings.provider})\nTo switch, type: \`/model <model_name>\` or \`/settings\``);
         return true;
       }
       ctx.settings.model = trimmed;
-      ctx.onOutput(`Model switched to: **${trimmed}**`);
+      saveUserSettings({ model: trimmed });
+      ctx.agentLoop.setProvider(createLLMProvider(ctx.settings));
+      ctx.onOutput(`Model switched to: **${trimmed}** (provider: ${ctx.settings.provider})`);
       return true;
+    },
+  },
+
+  '/settings': {
+    name: '/settings',
+    description: 'Configure AI provider, model, API key, and test connectivity',
+    usage: '/settings [provider|model|key|url|test]',
+    handler: async (args, ctx) => {
+      const parts = args.trim().split(/\s+/);
+      const sub = parts[0]?.toLowerCase();
+      const val = parts.slice(1).join(' ').trim();
+
+      if (!sub) {
+        const text = `
+### ⚙️ Antror Code Settings
+- **Provider**: **${ctx.settings.provider}**
+- **Model**: **${ctx.settings.model}**
+- **Base URL**: ${ctx.settings.baseURL || 'Default'}
+- **API Key**: ${ctx.settings.apiKey ? '••••••••' + ctx.settings.apiKey.slice(-4) : 'Not configured'}
+- **Permission Mode**: **${ctx.permissionEngine.getMode()}**
+- **Theme**: **${getCurrentThemeName()}**
+
+**Settings Commands:**
+- \`/settings provider <gemini|anthropic|openai|groq|deepseek|openrouter|mistral|ollama|custom>\`
+- \`/settings model <model_name>\` (type or paste any model name!)
+- \`/settings key <api_key>\`
+- \`/settings url <base_url>\` (for Ollama or Custom OpenAI endpoints)
+- \`/settings test\` (verify connection to the active provider and model)
+`;
+        ctx.onOutput(text);
+        return true;
+      }
+
+      if (sub === 'provider') {
+        const validProviders = ['gemini', 'anthropic', 'openai', 'groq', 'deepseek', 'openrouter', 'mistral', 'ollama', 'custom'];
+        if (!validProviders.includes(val.toLowerCase())) {
+          ctx.onOutput(`Invalid provider: "${val}". Available: ${validProviders.join(', ')}`);
+          return true;
+        }
+        ctx.settings.provider = val.toLowerCase() as any;
+        saveUserSettings({ provider: ctx.settings.provider });
+        ctx.agentLoop.setProvider(createLLMProvider(ctx.settings));
+        ctx.onOutput(`Provider set to: **${ctx.settings.provider}**`);
+        return true;
+      }
+
+      if (sub === 'model') {
+        if (!val) {
+          ctx.onOutput('Please provide a model name: `/settings model <model_name>`');
+          return true;
+        }
+        ctx.settings.model = val;
+        saveUserSettings({ model: val });
+        ctx.agentLoop.setProvider(createLLMProvider(ctx.settings));
+        ctx.onOutput(`Model set to: **${val}**`);
+        return true;
+      }
+
+      if (sub === 'key') {
+        if (!val) {
+          ctx.onOutput('Please provide an API key: `/settings key <api_key>`');
+          return true;
+        }
+        ctx.settings.apiKey = val;
+        saveUserSettings({ apiKey: val });
+        ctx.agentLoop.setProvider(createLLMProvider(ctx.settings));
+        ctx.onOutput('API key securely updated and saved.');
+        return true;
+      }
+
+      if (sub === 'url') {
+        if (!val) {
+          ctx.onOutput('Please provide a Base URL: `/settings url <url>`');
+          return true;
+        }
+        ctx.settings.baseURL = val;
+        saveUserSettings({ baseURL: val });
+        ctx.agentLoop.setProvider(createLLMProvider(ctx.settings));
+        ctx.onOutput(`Base URL updated to: **${val}**`);
+        return true;
+      }
+
+      if (sub === 'test') {
+        ctx.onOutput(`Testing connection to **${ctx.settings.provider}** (${ctx.settings.model})...`);
+        const res = await testConnection(ctx.settings);
+        if (res.success) {
+          ctx.onOutput(`✔ **Connection successful!** (Latency: ${res.latencyMs}ms)\n${res.message}`);
+        } else {
+          ctx.onOutput(`❌ **Connection failed!** (${res.latencyMs}ms)\nError: ${res.message}`);
+        }
+        return true;
+      }
+
+      ctx.onOutput(`Unknown settings command: "${sub}". Type \`/settings\` to see available options.`);
+      return true;
+    },
+  },
+
+  '/config': {
+    name: '/config',
+    description: 'Alias for /settings — view and edit configuration',
+    usage: '/config [provider|model|key|url|test]',
+    handler: async (args, ctx) => {
+      const settingsHandler = BUILTIN_COMMANDS['/settings'].handler;
+      return settingsHandler(args, ctx);
     },
   },
 
@@ -297,12 +405,13 @@ ${hasPkg ? '- Build: `npm run build`\n- Test: `npm test`' : '- Build / Test: see
     handler: async (args, ctx) => {
       const key = args.trim();
       if (!key) {
-        ctx.onOutput('Please provide your API key: `/login <api-key>`');
+        ctx.onOutput('Usage: `/login <api-key>` or use `/settings` to configure providers and models.');
         return true;
       }
       ctx.settings.apiKey = key;
       saveUserSettings({ apiKey: key });
-      ctx.onOutput('API key securely saved to user configuration.');
+      ctx.agentLoop.setProvider(createLLMProvider(ctx.settings));
+      ctx.onOutput('API key securely saved to user configuration and provider refreshed.');
       return true;
     },
   },

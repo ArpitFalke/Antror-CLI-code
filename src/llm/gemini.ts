@@ -268,7 +268,11 @@ export class GeminiProvider implements LLMProvider {
 
           const parts = candidate.content?.parts || [];
           for (const part of parts) {
-            if (part.text) {
+            if (part.thought || part.role === 'thought') {
+              if (part.text) {
+                yield { type: 'thought', text: part.text };
+              }
+            } else if (part.text) {
               yield { type: 'token', text: part.text };
             }
             if (part.functionCall) {

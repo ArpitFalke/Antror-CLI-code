@@ -321,6 +321,8 @@ export class AgentLoop {
           if (event.type === 'token') {
             content += event.text;
             await onEvent({ type: 'token', text: event.text });
+          } else if (event.type === 'thought') {
+            await onEvent({ type: 'thought', text: event.text });
           } else if (event.type === 'tool_call_start') {
             await onEvent({ type: 'tool_call_start', id: event.id, name: event.name });
           } else if (event.type === 'tool_call_delta') {

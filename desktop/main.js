@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { AntrorClient } from '../dist/sdk.js';
 import { loadSettings, saveUserSettings } from '../dist/config/settings.js';
+import { testConnection } from '../dist/llm/factory.js';
 
 // Catch any fatal errors and display an informative dialog instead of silent exit
 process.on('uncaughtException', (err) => {
@@ -146,6 +147,15 @@ ipcMain.handle('save-settings', (_event, updated) => {
   return true;
 });
 
+// 6b. Test Connection
+ipcMain.handle('test-connection', async (_event, settings) => {
+  try {
+    return await testConnection(settings);
+  } catch (err) {
+    return { success: false, message: err.message || String(err), latencyMs: 0 };
+  }
+});
+
 // 7. Start Agent Chat Stream
 ipcMain.handle('start-chat', async (event, { prompt, permissionMode, model, provider, apiKey }) => {
   if (!activeClient) {
@@ -162,6 +172,9 @@ ipcMain.handle('start-chat', async (event, { prompt, permissionMode, model, prov
     const response = await activeClient.chat(prompt, {
       onToken: (text) => {
         event.sender.send('chat:token', text);
+      },
+      onThought: (text) => {
+        event.sender.send('chat:thought', text);
       },
       onToolCall: (name, args) => {
         event.sender.send('chat:tool-call', { name, args });

@@ -13,6 +13,7 @@ export interface ToolExecutionResult {
 export type AgentEvent =
   | { type: 'agent_start'; prompt: string; sessionResume?: boolean }
   | { type: 'thinking_start'; verb: string }
+  | { type: 'thought'; text: string }
   | { type: 'token'; text: string }
   | { type: 'tool_call_start'; id: string; name: string }
   | { type: 'tool_call_delta'; id: string; delta: string }

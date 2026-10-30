@@ -5,6 +5,7 @@ import path from 'node:path';
 
 const DEFAULT_SLASH_COMMANDS = [
   '/help',
+  '/settings',
   '/clear',
   '/compact',
   '/config',

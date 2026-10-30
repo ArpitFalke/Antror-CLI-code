@@ -20,6 +20,7 @@ export interface AntrorClientOptions {
 
 export interface ChatCallbacks {
   onToken?: (text: string) => void;
+  onThought?: (text: string) => void;
   onToolCall?: (name: string, args: Record<string, any>) => void;
   onToolResult?: (result: ToolExecutionResult) => void;
   onEvent?: (event: AgentEvent) => void;
@@ -83,7 +84,9 @@ export class AntrorClient {
     const result = await this.agentLoop.run(prompt, async (event: AgentEvent) => {
       if (callbacks.onEvent) callbacks.onEvent(event);
 
-      if (event.type === 'token' && callbacks.onToken) {
+      if (event.type === 'thought' && callbacks.onThought) {
+        callbacks.onThought(event.text);
+      } else if (event.type === 'token' && callbacks.onToken) {
         callbacks.onToken(event.text);
       } else if (event.type === 'tool_execution_start' && callbacks.onToolCall) {
         callbacks.onToolCall(event.name, event.arguments);

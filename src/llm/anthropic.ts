@@ -265,6 +265,8 @@ export class AnthropicProvider implements LLMProvider {
           } else if (data.type === 'content_block_delta') {
             if (data.delta?.type === 'text_delta') {
               yield { type: 'token', text: data.delta.text };
+            } else if (data.delta?.type === 'thinking_delta') {
+              yield { type: 'thought', text: data.delta.thinking };
             } else if (data.delta?.type === 'input_json_delta') {
               currentToolArgs += data.delta.partial_json;
               yield {

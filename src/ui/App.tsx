@@ -17,6 +17,7 @@ interface MessageDisplay {
   id: string;
   role: 'user' | 'assistant' | 'tool' | 'system';
   content?: string;
+  thought?: string;
   toolCallLine?: string;
   toolResult?: ToolExecutionResult;
 }
@@ -57,6 +58,7 @@ export const App: React.FC<AppProps> = ({
 
   // Streaming assistant message state
   const currentStreamRef = useRef<string>('');
+  const currentThoughtRef = useRef<string>('');
 
   const cyclePermissionMode = () => {
     const modes: PermissionMode[] = ['default', 'acceptEdits', 'plan', 'bypassPermissions'];
@@ -125,6 +127,7 @@ export const App: React.FC<AppProps> = ({
     setIsGenerating(true);
     setSpinnerStartTime(Date.now());
     currentStreamRef.current = '';
+    currentThoughtRef.current = '';
 
     const assistantMsgId = `asst_${Date.now()}`;
 
@@ -132,6 +135,22 @@ export const App: React.FC<AppProps> = ({
       const finalResult = await agentLoop.run(trimmed, async (event: AgentEvent) => {
         if (event.type === 'thinking_start') {
           setSpinnerVerb(event.verb);
+        } else if (event.type === 'thought') {
+          currentThoughtRef.current += event.text;
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (last && last.id === assistantMsgId) {
+              return [
+                ...prev.slice(0, -1),
+                { ...last, thought: currentThoughtRef.current },
+              ];
+            } else {
+              return [
+                ...prev,
+                { id: assistantMsgId, role: 'assistant', thought: currentThoughtRef.current },
+              ];
+            }
+          });
         } else if (event.type === 'token') {
           currentStreamRef.current += event.text;
           setMessages(prev => {
@@ -139,12 +158,12 @@ export const App: React.FC<AppProps> = ({
             if (last && last.id === assistantMsgId) {
               return [
                 ...prev.slice(0, -1),
-                { ...last, content: currentStreamRef.current },
+                { ...last, content: currentStreamRef.current, thought: currentThoughtRef.current },
               ];
             } else {
               return [
                 ...prev,
-                { id: assistantMsgId, role: 'assistant', content: currentStreamRef.current },
+                { id: assistantMsgId, role: 'assistant', content: currentStreamRef.current, thought: currentThoughtRef.current },
               ];
             }
           });
@@ -221,7 +240,20 @@ export const App: React.FC<AppProps> = ({
           if (msg.role === 'assistant') {
             return (
               <Box key={msg.id} marginY={0} flexDirection="column">
-                <MarkdownView content={msg.content || ''} />
+                {msg.thought && (
+                  <Box
+                    marginBottom={1}
+                    paddingX={1}
+                    borderStyle="round"
+                    borderColor="#555555"
+                    flexDirection="column"
+                  >
+                    <Text color="#AAAAAA" italic>
+                      💭 <Text bold color="#FF6B35">Thinking:</Text> {msg.thought}
+                    </Text>
+                  </Box>
+                )}
+                {msg.content ? <MarkdownView content={msg.content} /> : null}
               </Box>
             );
           }

@@ -2,7 +2,16 @@ export type PermissionMode = 'default' | 'acceptEdits' | 'plan' | 'bypassPermiss
 
 export type OutputFormat = 'text' | 'json' | 'stream-json';
 
-export type LLMProviderType = 'anthropic' | 'openai' | 'ollama' | 'gemini';
+export type LLMProviderType =
+  | 'gemini'
+  | 'anthropic'
+  | 'openai'
+  | 'groq'
+  | 'deepseek'
+  | 'openrouter'
+  | 'mistral'
+  | 'ollama'
+  | 'custom';
 
 export interface AntrorSettings {
   provider: LLMProviderType;

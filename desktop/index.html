@@ -132,18 +132,31 @@
           <select id="settingsProvider">
             <option value="gemini">Google Gemini</option>
             <option value="anthropic">Anthropic Claude</option>
-            <option value="openai">OpenAI / OpenRouter / DeepSeek</option>
+            <option value="openai">OpenAI (Official)</option>
+            <option value="groq">Groq (Ultra-Fast 500+ tok/s)</option>
+            <option value="deepseek">DeepSeek (V3 / R1 Reasoning)</option>
+            <option value="openrouter">OpenRouter (200+ Models)</option>
+            <option value="mistral">Mistral AI</option>
             <option value="ollama">Local Ollama</option>
+            <option value="custom">Custom OpenAI Endpoint</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Model Name</label>
-          <input type="text" id="settingsModel" placeholder="e.g. gemini-3.5-flash, claude-3-5-sonnet-20241022, gpt-4o" />
+          <label>Model Name <small style="color:#aaa;">(Select or type/paste any model name)</small></label>
+          <input type="text" id="settingsModel" placeholder="e.g. gemini-3.5-flash, deepseek-reasoner, llama-3.3-70b-versatile, claude-3-5-sonnet" />
+        </div>
+        <div class="form-group" id="groupBaseUrl" style="display:none;">
+          <label>Base URL <small style="color:#aaa;">(For Ollama or Custom servers)</small></label>
+          <input type="text" id="settingsBaseUrl" placeholder="http://localhost:11434 or http://localhost:1234/v1" />
         </div>
         <div class="form-group">
           <label>API Key</label>
-          <input type="password" id="settingsApiKey" placeholder="sk-... or Google Gemini API Key" />
+          <input type="password" id="settingsApiKey" placeholder="API key (leave blank for local Ollama)" />
           <small>Keys are stored securely in your user directory (~/.antror/settings.json).</small>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+          <button type="button" class="btn btn-secondary" id="testConnectionBtn">⚡ Test Connection</button>
+          <span id="testConnectionStatus" style="font-size:12px; color:#aaa;"></span>
         </div>
       </div>
       <div class="modal-footer">

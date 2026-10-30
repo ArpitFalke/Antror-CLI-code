@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('antrorDesktop', {
   readFile: (relPath) => ipcRenderer.invoke('read-file-content', relPath),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  testConnection: (settings) => ipcRenderer.invoke('test-connection', settings),
   startChat: (payload) => ipcRenderer.invoke('start-chat', payload),
   interruptChat: () => ipcRenderer.invoke('interrupt-chat'),
 
@@ -15,6 +16,11 @@ contextBridge.exposeInMainWorld('antrorDesktop', {
     const handler = (_event, token) => callback(token);
     ipcRenderer.on('chat:token', handler);
     return () => ipcRenderer.removeListener('chat:token', handler);
+  },
+  onThought: (callback) => {
+    const handler = (_event, text) => callback(text);
+    ipcRenderer.on('chat:thought', handler);
+    return () => ipcRenderer.removeListener('chat:thought', handler);
   },
   onToolCall: (callback) => {
     const handler = (_event, data) => callback(data);

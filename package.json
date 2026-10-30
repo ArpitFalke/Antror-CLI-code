@@ -10,6 +10,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "prepare": "tsc",
     "watch": "tsc --watch",
     "start": "node ./bin/antror.js",
     "desktop": "electron ./desktop/main.js",
@@ -19,6 +20,13 @@
     "lint": "eslint src/ --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "bin",
+    "dist",
+    "desktop",
+    "README.md",
+    "LICENSE"
+  ],
   "build": {
     "appId": "com.antror.code",
     "productName": "Antror Code",
