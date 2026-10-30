@@ -8,6 +8,10 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArpitFalke/Antror-CLI-code.git"
+  },
   "scripts": {
     "build": "tsc",
     "prepare": "tsc",
