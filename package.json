@@ -4,7 +4,7 @@
   "description": "Terminal-based agentic coding assistant replicating Claude Code UI/UX and behavior",
   "type": "module",
   "bin": {
-    "antror": "./bin/antror.js"
+    "antror": "bin/antror.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
